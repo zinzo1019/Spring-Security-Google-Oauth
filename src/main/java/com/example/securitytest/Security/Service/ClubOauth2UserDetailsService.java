@@ -66,6 +66,9 @@ public class ClubOauth2UserDetailsService extends DefaultOAuth2UserService {
 
     }
 
+    /**
+     * db에 소셜 로그인 이메일 저장
+     * */
     private ClubMember saveSocialMember(String email) {
 
         Optional<ClubMember> result = repository.findByEmail(email, true);

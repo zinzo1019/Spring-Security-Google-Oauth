@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -44,13 +45,33 @@ public class ClubOauth2UserDetailsService extends DefaultOAuth2UserService {
             log.info(k + " : " + v);
         });
 
+//      <naver>  response에 담기는 여러 데이터들을 다시 Map 형식으로 받는다.
+        Map<String, String> NaverResponse = (Map<String, String>) oAuth2User.getAttributes().get("response");
+
+//      <kakao>
+        Map<String, String> KakaoAccount = (Map<String, String>) oAuth2User.getAttributes().get("kakao_account");
+        Map<String, String> KakaoProperties = (Map<String, String>) oAuth2User.getAttributes().get("properties");
+
         String email = null;
+        String name = null;
 
         if(clientName.equals("Google")) {
             email = oAuth2User.getAttribute("email");
+            name = oAuth2User.getAttribute("name");
         }
 
-        ClubMember member = saveSocialMember(email);
+        if(clientName.equals("Naver")) {
+            email = NaverResponse.get("email");
+            name = NaverResponse.get("name");
+        }
+
+        if(clientName.equals("Kakao")) {
+            email = KakaoAccount.get("email");
+            name = KakaoProperties.get("nickname");
+        }
+
+        ClubMember member = saveSocialMember(email, name);
+
         ClubAuthMemberDTO clubAuthMember = new ClubAuthMemberDTO(
                 member.getEmail(),
                 member.getPassword(),
@@ -67,9 +88,9 @@ public class ClubOauth2UserDetailsService extends DefaultOAuth2UserService {
     }
 
     /**
-     * db에 소셜 로그인 이메일 저장
+     * db에 소셜 로그인 이메일과 이름 저장
      * */
-    private ClubMember saveSocialMember(String email) {
+    private ClubMember saveSocialMember(String email, String name) {
 
         Optional<ClubMember> result = repository.findByEmail(email, true);
 
@@ -79,7 +100,8 @@ public class ClubOauth2UserDetailsService extends DefaultOAuth2UserService {
         ClubMember clubMember = ClubMember.builder()
                 .email(email)
                 .password("1111")
-                .name(email)
+                .name(name)
+                .fromSocial(true)
                 .build();
 
         clubMember.addMemberRole(ClubMemberRole.USER);

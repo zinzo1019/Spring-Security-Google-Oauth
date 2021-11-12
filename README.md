@@ -1,4 +1,4 @@
-# Spring-Security-Google-Oauth
+# Spring-Security-Oauth
 
 google oauth를 통해 구글 로그인 진행
 

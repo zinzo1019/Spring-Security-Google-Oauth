@@ -23,8 +23,6 @@ public class ClubMember extends BaseEntity {
     @Id
     private String email;
 
-    private String password;
-
     private String name;
 
     private boolean fromSocial;
